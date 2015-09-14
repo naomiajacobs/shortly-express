@@ -2,6 +2,7 @@ var express = require('express');
 var util = require('./lib/utility');
 var partials = require('express-partials');
 var bodyParser = require('body-parser');
+var session = require('express-session');
 
 
 var db = require('./app/config');
@@ -25,8 +26,22 @@ app.use(express.static(__dirname + '/public'));
 
 app.get('/', 
 function(req, res) {
-  res.render('index');
+  if (true) {
+    //do whatever they want
+  } else {
+    res.redirect('/login');
+  }
+  // res.render('index');
+  //check to see if user is signed in
+    //by looking at the cookies in the header
+    //if signed in, render their index
+    //else, render the login page
 });
+
+app.get('/login',
+  function(req, res) {
+    res.render('login');
+  });
 
 app.get('/create', 
 function(req, res) {
@@ -65,6 +80,7 @@ function(req, res) {
           base_url: req.headers.origin
         })
         .then(function(newLink) {
+          // newLink.save();
           res.send(200, newLink);
         });
       });
