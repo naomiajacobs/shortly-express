@@ -13,7 +13,7 @@ var Link = require('../app/models/link');
 // Remove the 'x' from beforeEach block when working on
 // authentication tests.
 /************************************************************/
-var beforeEach = function(){};
+var xbeforeEach = function(){};
 /************************************************************/
 
 
@@ -63,7 +63,7 @@ describe('', function() {
 
     var requestWithSession = request.defaults({jar: true});
 
-var beforeEach = function(){
+var xbeforeEach = function(){
       // create a user that we can then log-in with
       new User({
           'username': 'Phillip',
@@ -83,9 +83,9 @@ var beforeEach = function(){
           done();
         });
       });
-    }
+    };
 
-    xit('Only shortens valid urls, returning a 404 - Not found for invalid urls', function(done) {
+    it('Only shortens valid urls, returning a 404 - Not found for invalid urls', function(done) {
       var options = {
         'method': 'POST',
         'uri': 'http://127.0.0.1:4568/links',
@@ -112,7 +112,7 @@ var beforeEach = function(){
         }
       };
 
-      xit('Responds with the short code', function(done) {
+      it('Responds with the short code', function(done) {
         requestWithSession(options, function(error, res, body) {
           expect(res.body.url).to.equal('http://roflzoo.com/');
           expect(res.body.code).to.not.be.null;
@@ -120,7 +120,7 @@ var beforeEach = function(){
         });
       });
 
-      xit('New links create a database entry', function(done) {
+      it('New links create a database entry', function(done) {
         requestWithSession(options, function(error, res, body) {
           db.knex('urls')
             .where('url', '=', 'http://roflzoo.com/')
@@ -134,7 +134,7 @@ var beforeEach = function(){
         });
       });
 
-      xit('Fetches the link url title', function (done) {
+      it('Fetches the link url title', function (done) {
         requestWithSession(options, function(error, res, body) {
           db.knex('urls')
             .where('title', '=', 'Funny pictures of animals, funny dog pictures')
@@ -166,7 +166,7 @@ var beforeEach = function(){
         });
       });
 
-      xit('Returns the same shortened code', function(done) {
+      it('Returns the same shortened code', function(done) {
         var options = {
           'method': 'POST',
           'followAllRedirects': true,
@@ -183,7 +183,7 @@ var beforeEach = function(){
         });
       });
 
-      xit('Shortcode redirects to correct url', function(done) {
+      it('Shortcode redirects to correct url', function(done) {
         var options = {
           'method': 'GET',
           'uri': 'http://127.0.0.1:4568/' + link.get('code')
@@ -196,7 +196,7 @@ var beforeEach = function(){
         });
       });
 
-      xit('Returns all of the links to display on the links page', function(done) {
+      it('Returns all of the links to display on the links page', function(done) {
         var options = {
           'method': 'GET',
           'uri': 'http://127.0.0.1:4568/links'
@@ -213,23 +213,23 @@ var beforeEach = function(){
 
   }); // 'Link creation'
 
-  describe('Privileged Access:', function(){
+  xdescribe('Privileged Access:', function(){
 
-    xit('Redirects to login page if a user tries to access the main page and is not signed in', function(done) {
+    it('Redirects to login page if a user tries to access the main page and is not signed in', function(done) {
       request('http://127.0.0.1:4568/', function(error, res, body) {
         expect(res.req.path).to.equal('/login');
         done();
       });
     });
 
-    xit('Redirects to login page if a user tries to create a link and is not signed in', function(done) {
+    it('Redirects to login page if a user tries to create a link and is not signed in', function(done) {
       request('http://127.0.0.1:4568/create', function(error, res, body) {
         expect(res.req.path).to.equal('/login');
         done();
       });
     });
 
-    xit('Redirects to login page if a user tries to see all of the links and is not signed in', function(done) {
+    it('Redirects to login page if a user tries to see all of the links and is not signed in', function(done) {
       request('http://127.0.0.1:4568/links', function(error, res, body) {
         expect(res.req.path).to.equal('/login');
         done();
@@ -238,9 +238,9 @@ var beforeEach = function(){
 
   }); // 'Priviledged Access'
 
-  describe('Account Creation:', function(){
+  xdescribe('Account Creation:', function(){
 
-    xit('Signup creates a user record', function(done) {
+    it('Signup creates a user record', function(done) {
       var options = {
         'method': 'POST',
         'uri': 'http://127.0.0.1:4568/signup',
@@ -268,7 +268,7 @@ var beforeEach = function(){
       });
     });
 
-    xit('Signup logs in a new user', function(done) {
+    it('Signup logs in a new user', function(done) {
       var options = {
         'method': 'POST',
         'uri': 'http://127.0.0.1:4568/signup',
@@ -286,7 +286,7 @@ var beforeEach = function(){
 
   }); // 'Account Creation'
 
-  describe('Account Login:', function(){
+  xdescribe('Account Login:', function(){
 
     var requestWithSession = request.defaults({jar: true});
 
@@ -295,11 +295,11 @@ var beforeEach = function(){
           'username': 'Phillip',
           'password': 'Phillip'
       }).save().then(function(){
-        done();
+        done()
       });
-    });
+    })
 
-    xit('Logs in existing users', function(done) {
+    it('Logs in existing users', function(done) {
       var options = {
         'method': 'POST',
         'uri': 'http://127.0.0.1:4568/login',
@@ -315,7 +315,7 @@ var beforeEach = function(){
       });
     });
 
-    xit('Users that do not exist are kept on login page', function(done) {
+    it('Users that do not exist are kept on login page', function(done) {
       var options = {
         'method': 'POST',
         'uri': 'http://127.0.0.1:4568/login',
