@@ -3,6 +3,7 @@ var util = require('./lib/utility');
 var partials = require('express-partials');
 var bodyParser = require('body-parser');
 var session = require('express-session');
+var bcrypt = require('bcrypt-nodejs');
 
 
 var db = require('./app/config');
@@ -23,14 +24,29 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.static(__dirname + '/public'));
 
+/*
+
+//if there is a successful login
+
+app.use(session({
+  genid: function(req) {
+    return geuuid();
+  }
+}))
+is session valid?
+if no, res.redirect('/login')
+else next
+*/
+
+
 
 app.get('/', 
 function(req, res) {
-  if (true) {
+  // if (true) {
     //do whatever they want
-  } else {
+  // } else {
     res.redirect('/login');
-  }
+  // }
   // res.render('index');
   //check to see if user is signed in
     //by looking at the cookies in the header
@@ -38,9 +54,9 @@ function(req, res) {
     //else, render the login page
 });
 
-app.get('/login',
+app.get('/signup',
   function(req, res) {
-    res.render('login');
+    res.render('signup');
   });
 
 app.get('/create', 
@@ -92,6 +108,48 @@ function(req, res) {
 // Write your authentication routes here
 /************************************************************/
 
+app.post('/login', function(req, res) {
+
+  var username = req.body.username;
+  var password = /*salted and hashed*/(req.body.password);
+
+  // if (username === /*correct username from db*/ && password === /*correct password from db*/) {
+  //   req.session.regenerate(function() {
+  //     req.session.user = username;
+  //     req.redirect('/????');
+  //   })
+  // }
+})
+
+app.post('/signup', function(req, res) {
+
+    if (!req.body.username || !req.body.password) {
+      res.redirect('/login');
+    }
+ 
+    var username = req.body.username;
+    var password = req.body.password;
+    var salt = bcrypt.genSaltSync(10);
+    var hash = bcrypt.hashSync(password, salt);
+    console.log('user: ', username, 'password: ', password, 'salt: ', salt, 'hash: ', hash);
+    //create new row in users table
+      //pass in username, hash, and salt
+    Users.create({
+      username: username,
+      hash: hash,
+      salt: salt}
+    ).then(function(newUser) {
+      console.log(newUser);
+      res.send(200, newUser);
+    });
+
+    // var userObj = db.users.findOne({ username: username, password: hash, salt: salt });
+    // req.session.regenerate(function(){
+    //     // req.session.user = userObj.username;
+    //     res.redirect('/restricted');
+    // });
+ 
+});
 
 
 /************************************************************/
