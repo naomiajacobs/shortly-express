@@ -69,11 +69,24 @@ function(req, res) {
   res.render('index');
 });
 
+/*FILTER LINKS HERE*/
 app.get('/links', 
 function(req, res) {
-  Links.reset().fetch().then(function(links) {
-    res.send(200, links.models);
-  });
+
+  var userid;
+  var currentUser = new User({username: req.session.user}).fetch()
+   .then(function(user) {
+     userid = user.get('id');
+     console.log('trying to find user\'s links; userid is: ', userid);
+     new Links({user_id: userid}).fetch()
+     .then(function(links) {
+      res.send(200, links.models);
+     })
+   });
+
+  // Links.reset().fetch().then(function(links) {
+  //   res.send(200, links.models);
+  // });
 });
 
 
@@ -88,6 +101,7 @@ function(req, res) {
 
   new Link({ url: uri }).fetch().then(function(found) {
     if (found) {
+      console.log('found this link: ', found);
       res.send(200, found.attributes);
     } else {
       util.getUrlTitle(uri, function(err, title) {
@@ -96,15 +110,23 @@ function(req, res) {
           return res.send(404);
         }
 
-        Links.create({
-          url: uri,
-          title: title,
-          base_url: req.headers.origin
-        })
-        .then(function(newLink) {
-          // newLink.save();
-          res.send(200, newLink);
-        });
+        var userid;
+        var currentUser = new User({username: req.session.user}).fetch()
+          .then(function(user) {
+           userid = user.get('id');
+           console.log('newly created link has user id of: ', userid);
+            Links.create({
+              url: uri,
+              title: title,
+              base_url: req.headers.origin,
+              user_id: userid
+            })
+            .then(function(newLink) {
+              res.send(200, newLink);
+            });
+          });
+
+        //links.create is creating a new row in the URLs table with the specified properties below.
       });
     }
   });
@@ -124,12 +146,9 @@ app.post('/login', function(req, res) {
 
   var currentUser = new User({username: username}).fetch()
     .then(function(user) {
-      console.log(user);
       var salt = user.get('salt');
       var hash = bcrypt.hashSync(password, salt);
       if (user.get('hash') === hash) {
-        console.log('password from user is: ', user.get('password'));
-        console.log('user is: ', user);
         req.session.user = username;
         res.redirect('/index');
       } else {
@@ -153,7 +172,6 @@ app.post('/signup', function(req, res) {
     var password = req.body.password;
     var salt = bcrypt.genSaltSync(10);
     var hash = bcrypt.hashSync(password, salt);
-    console.log('user: ', username, 'password: ', password, 'salt: ', salt, 'hash: ', hash);
 
     Users.create({
       username: username,
