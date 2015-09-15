@@ -27,6 +27,7 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
 app.use(cookieParser());
+//this is creating a session. and we can use it below when a user logins and signs up
 app.use(session({
     secret: "mysecret",
     resave: true,
@@ -37,7 +38,7 @@ app.use(express.static(__dirname + '/public'));
 
 app.all('/', function(req, res, next) {
   console.log('session user is: ', req.session.user);
-  console.log('session id is: ', req.sessionID);
+  // console.log('session id is: ', req.sessionID);
   if (!req.session.user) {
     res.redirect('/login');
   } else {
@@ -45,6 +46,10 @@ app.all('/', function(req, res, next) {
   }
 });
 
+app.get('/logout', function(req, res) {
+  req.session.destroy(); //when we do a destroy, it destroys EVERYTHING. so that means .user property and .sessionID property
+  res.redirect('/login');
+});
 
 app.get('/', function(req, res) {
   res.render('index');
@@ -70,6 +75,7 @@ function(req, res) {
     res.send(200, links.models);
   });
 });
+
 
 app.post('/links', 
 function(req, res) {
@@ -111,7 +117,7 @@ function(req, res) {
 app.post('/login', function(req, res) {
 
   var username = req.body.username;
-  var password = req.body.password; /*SALT AND HASH LATER*/
+  var password = req.body.password;
 
   //bookshelf does a check, does the user already exists in our database? if so, then do the next security check which is if the hash equals the hash in the database.
   //reset the session by calling req.session.user = username. this will reset the session so there is a new expiration date. 
@@ -158,6 +164,10 @@ app.post('/signup', function(req, res) {
       res.redirect('/index');
     });
 });
+
+//if they click logout function(req, res) {
+//   res.session.end();
+// }
 
 
 /************************************************************/

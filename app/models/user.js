@@ -8,8 +8,6 @@ var User = db.Model.extend({
 	tableName: 'users',
 	links: function() {
 	  return this.hasMany(Link);
-	// user: function() {
-	// 	return this.belongsTo(User, 'user_id');
 	}
 });
 
