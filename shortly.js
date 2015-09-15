@@ -4,6 +4,7 @@ var partials = require('express-partials');
 var bodyParser = require('body-parser');
 var session = require('express-session');
 var bcrypt = require('bcrypt-nodejs');
+var cookieParser = require('cookie-parser');
 
 
 var db = require('./app/config');
@@ -13,7 +14,9 @@ var Links = require('./app/collections/links');
 var Link = require('./app/models/link');
 var Click = require('./app/models/click');
 
+
 var app = express();
+
 
 app.set('views', __dirname + '/views');
 app.set('view engine', 'ejs');
@@ -22,36 +25,33 @@ app.use(partials());
 app.use(bodyParser.json());
 // Parse forms (signup/login)
 app.use(bodyParser.urlencoded({ extended: true }));
+
+app.use(cookieParser());
+app.use(session({
+    secret: "mysecret",
+    resave: true,
+    saveUninitialized: true,
+}));
+
 app.use(express.static(__dirname + '/public'));
 
-/*
-
-//if there is a successful login
-
-app.use(session({
-  genid: function(req) {
-    return geuuid();
-  }
-}))
-is session valid?
-if no, res.redirect('/login')
-else next
-*/
-
-
-
-app.get('/', 
-function(req, res) {
-  // if (true) {
-    //do whatever they want
-  // } else {
+app.all('/', function(req, res, next) {
+  console.log('session user is: ', req.session.user);
+  console.log('session id is: ', req.sessionID);
+  if (!req.session.user) {
     res.redirect('/login');
-  // }
-  // res.render('index');
-  //check to see if user is signed in
-    //by looking at the cookies in the header
-    //if signed in, render their index
-    //else, render the login page
+  } else {
+    next();
+  }
+});
+
+
+app.get('/', function(req, res) {
+  res.render('index');
+});
+
+app.get('/login', function(req, res) {
+  res.render('login');
 });
 
 app.get('/signup',
@@ -111,15 +111,22 @@ function(req, res) {
 app.post('/login', function(req, res) {
 
   var username = req.body.username;
-  var password = /*salted and hashed*/(req.body.password);
+  var password = req.body.password; /*SALT AND HASH LATER*/
 
-  // if (username === /*correct username from db*/ && password === /*correct password from db*/) {
-  //   req.session.regenerate(function() {
-  //     req.session.user = username;
-  //     req.redirect('/????');
-  //   })
-  // }
-})
+  var currentUser = new User({username: username}).fetch()
+    .then(function(user) {
+      if (user.get('password') === password) {
+        console.log('password from user is: ', user.get('password'));
+        console.log('user is: ', user);
+        req.session.user = username;
+        res.redirect('/index');
+        // res.send(301);
+      } else {
+        res.redirect('/login');
+      }
+    });
+
+});
 
 app.post('/signup', function(req, res) {
 
@@ -132,23 +139,16 @@ app.post('/signup', function(req, res) {
     var salt = bcrypt.genSaltSync(10);
     var hash = bcrypt.hashSync(password, salt);
     console.log('user: ', username, 'password: ', password, 'salt: ', salt, 'hash: ', hash);
-    //create new row in users table
-      //pass in username, hash, and salt
+
     Users.create({
       username: username,
       hash: hash,
       salt: salt}
     ).then(function(newUser) {
       console.log(newUser);
-      res.send(200, newUser);
+      req.session.user = username;
+      res.redirect('/index');
     });
-
-    // var userObj = db.users.findOne({ username: username, password: hash, salt: salt });
-    // req.session.regenerate(function(){
-    //     // req.session.user = userObj.username;
-    //     res.redirect('/restricted');
-    // });
- 
 });
 
 
