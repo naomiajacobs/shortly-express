@@ -76,17 +76,12 @@ function(req, res) {
   var userid;
   var currentUser = new User({username: req.session.user}).fetch()
    .then(function(user) {
-     userid = user.get('id');
-     console.log('trying to find user\'s links; userid is: ', userid);
-     new Links({user_id: userid}).fetch()
-     .then(function(links) {
-      res.send(200, links.models);
-     })
-   });
+      userid = user.get('id');
+      Links.fetch().then(function(links) {
+      res.send(200, links.where({'user_id': userid}));
+    });
 
-  // Links.reset().fetch().then(function(links) {
-  //   res.send(200, links.models);
-  // });
+   });
 });
 
 
