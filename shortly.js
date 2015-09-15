@@ -115,12 +115,12 @@ app.post('/login', function(req, res) {
 
   var currentUser = new User({username: username}).fetch()
     .then(function(user) {
-      if (user.get('password') === password) {
+      console.log(user);
+      if (user.get('hash') === password) {
         console.log('password from user is: ', user.get('password'));
         console.log('user is: ', user);
         req.session.user = username;
         res.redirect('/index');
-        // res.send(301);
       } else {
         res.redirect('/login');
       }
@@ -142,10 +142,9 @@ app.post('/signup', function(req, res) {
 
     Users.create({
       username: username,
-      hash: hash,
+      hash: password,
       salt: salt}
     ).then(function(newUser) {
-      console.log(newUser);
       req.session.user = username;
       res.redirect('/index');
     });
