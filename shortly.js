@@ -113,10 +113,15 @@ app.post('/login', function(req, res) {
   var username = req.body.username;
   var password = req.body.password; /*SALT AND HASH LATER*/
 
+  //bookshelf does a check, does the user already exists in our database? if so, then do the next security check which is if the hash equals the hash in the database.
+  //reset the session by calling req.session.user = username. this will reset the session so there is a new expiration date. 
+
   var currentUser = new User({username: username}).fetch()
     .then(function(user) {
       console.log(user);
-      if (user.get('hash') === password) {
+      var salt = user.get('salt');
+      var hash = bcrypt.hashSync(password, salt);
+      if (user.get('hash') === hash) {
         console.log('password from user is: ', user.get('password'));
         console.log('user is: ', user);
         req.session.user = username;
@@ -124,7 +129,11 @@ app.post('/login', function(req, res) {
       } else {
         res.redirect('/login');
       }
+    })
+    .catch(function(err) {
+      res.redirect('/login');
     });
+    //in promises catch is throwing all the error info here.
 
 });
 
@@ -142,7 +151,7 @@ app.post('/signup', function(req, res) {
 
     Users.create({
       username: username,
-      hash: password,
+      hash: hash,
       salt: salt}
     ).then(function(newUser) {
       req.session.user = username;
